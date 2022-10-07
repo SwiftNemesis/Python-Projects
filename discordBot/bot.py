@@ -1,11 +1,16 @@
 import discord
+from discord.ext import commands
 import os
 import random
 from dotenv import load_dotenv
 
 load_dotenv()
 
-bot = discord.Client(intents = discord.Intents.default())
+intents = discord.Intents.all()
+intents.messages = True
+bot = discord.Client(intents=intents)
+
+
 token = os.getenv('TOKEN')
 
 @bot.event
@@ -19,11 +24,11 @@ async def on_ready():
             
     print("FCC Reminder Bot is in " + str(guild_count) + " guilds.")
 
-@bot.event
-async def on_message(message):
-    if message.content == "hello":
-        
-        await message.channel.send("hey dirtbag")
+bot = commands.Bot(command_prefix='$', intents=intents)
+
+@bot.command()
+async def test(ctx, arg):
+    await ctx.send(arg)
 
 bot.run(token)
 
