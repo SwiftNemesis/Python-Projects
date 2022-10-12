@@ -1,5 +1,6 @@
 import discord
 import os
+import googleCalendar
 import random
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -20,3 +21,6 @@ async def on_message(message):
 discord_bot.run(token) # type: ignore
 
 
+    
+
+googleCalendar.main()
