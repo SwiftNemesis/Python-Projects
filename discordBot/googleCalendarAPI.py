@@ -1,3 +1,8 @@
+def get_event_items(service,now):
+    event = service.events().list(calendarId='primary', maxResults=1, timeMin=now, singleEvents=True, orderBy='startTime').execute()
+    events_items = event.get('items',[])
+    return events_items
+
 def convert_discord_ids(id_list):
     
     discordIdList = []
@@ -28,13 +33,7 @@ def convert_discord_ids(id_list):
 def get_attendee_ids(service, now):
     
     print('Getting the next upcoming event')
-    
-    events_result = service.events().list(calendarId='primary', 
-                                          maxResults=1, 
-                                          timeMin=now, 
-                                          singleEvents=True, 
-                                          orderBy='startTime').execute()
-    events = events_result.get('items', [])
+    events = get_event_items(service,now)
     #Pulls event id using the 'id' identifier in the array
     event_id = events[0].get('id')
     str(event_id)
@@ -61,6 +60,19 @@ def get_attendee_ids(service, now):
     
     
 
+def get_event_summary(service, now):
+    print('Getting event details')
+    events_result = get_event_items(service, now)
+    events_summary = events_result[0].get('summary', [])
+    return events_summary
 
-
+def get_event_startTime(service, now):
+    print('Getting event start time')
+    events_result = get_event_items(service,now)
     
+
+def get_event_endTime(service,now):
+    print('Getting event end time')
+    events_result = get_event_items(service,now)
+    
+
