@@ -1,9 +1,9 @@
 import discord
 import os
-import googleCalendar
+import googleCalendarAPI
 import random
-from dotenv import load_dotenv
 from discord.ext import commands
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -16,11 +16,14 @@ discord_bot = discord.Client(intents=intents)
 async def on_message(message):
     if message.content == "hello":
         await message.reply("hey dirtbag")
+    elif message.content == "calendar":
+        list = googleCalendarAPI.main()
+        await message.reply(list)
 
     
-discord_bot.run(token) # type: ignore
+discord_bot.run('MTAyODAwMzgzNDYwNzQ0ODE0NQ.G63FUD.bMKHSXOjyUE0aQc99kQW3N4B6hSLC3vT8lZyfU') # type: ignore
 
 
     
 
-googleCalendar.main()
+
