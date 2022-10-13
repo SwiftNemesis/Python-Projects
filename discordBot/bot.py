@@ -58,10 +58,13 @@ async def on_message(message):
         event_startTime = googleCalendarAPI.get_event_startTime(service, now)
         event_endTime = googleCalendarAPI.get_event_endTime(service, now)
         if not list:
-            await message.reply('No attendees on listed event')
+            await message.reply(f'No attendees on listed event\nHere is the summary of the event:\n**{event_summary}**\n Here is the start time and end time: **{event_startTime}** and **{event_endTime}**')
         else:    
+            
             for item in list:
                 await message.reply(f'{item}')
+            
+            await message.reply(f'Here is the summary of the event:\n {event_summary}\n Here is the start time and end time: {event_startTime} and {event_endTime}')   
 
         
 # channel_ID = 1027272274027499573

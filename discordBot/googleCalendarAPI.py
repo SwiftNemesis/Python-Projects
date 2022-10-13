@@ -69,10 +69,17 @@ def get_event_summary(service, now):
 def get_event_startTime(service, now):
     print('Getting event start time')
     events_result = get_event_items(service,now)
+    events_start = events_result[0].get('start', [])
+    events_start_time = events_start.get('dateTime', [])
+    return events_start_time
+    
     
 
 def get_event_endTime(service,now):
     print('Getting event end time')
     events_result = get_event_items(service,now)
+    events_end = events_result[0].get('end', [])
+    events_end_time = events_end.get('dateTime')
+    return events_end_time
     
 
