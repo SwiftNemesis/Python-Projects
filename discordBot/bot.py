@@ -21,7 +21,7 @@ async def on_message(message):
         await message.reply(list)
 
     
-discord_bot.run('MTAyODAwMzgzNDYwNzQ0ODE0NQ.G63FUD.bMKHSXOjyUE0aQc99kQW3N4B6hSLC3vT8lZyfU') # type: ignore
+discord_bot.run(token) # type: ignore
 
 
     
