@@ -1,9 +1,11 @@
 from __future__ import print_function
 from email.errors import StartBoundaryNotFoundDefect
 #HEADERS FOR DISCORD API
-import discord, asyncio, os, googleCalendarAPI
+import discord, os, googleCalendarAPI
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
+import pytz
 
 #HEADERS FOR GOOGLE CALENDAR API
 from calendar import calendar
@@ -37,26 +39,10 @@ def validate_google_API_credentials():
             token.write(creds.to_json())
     return creds
 
-HOURS_BEFORE = 5
-#Checks the time of the next event check if it's 5 hours before
-def check_time(time):
-    from datetime import datetime
-    import pytz
-    time_int = int(time[11:13])
-    time_int -= HOURS_BEFORE
-    if time_int < 0:
-        return False
-    #Builds the string for time to compare it to the current time
-    time_string = f'{time_int}:{time[14:16]}'
-    time_zone = pytz.timezone('America/Los_Angeles')
-    current_time = datetime.now(time_zone)
-    #converts current time to be Hours and Minutes In military time
-    current_time = current_time.strftime("%H:%M")
-    if time_string == current_time:
-        return True
-    else:
-        return False
-    
+def change_to_UTC(time):
+    time = time[:-6]
+    time += 'Z'
+    return time
 #Section for Discord Bot Code
 load_dotenv()
 
@@ -69,24 +55,24 @@ bot = discord.Client (intents=intents)
 channel_ID = 996591747226411018
 creds = validate_google_API_credentials()
 service = build('calendar', 'v3', credentials=creds)
-now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-        
+
 @tasks.loop(minutes=1)
 async def reminder():
+    now = datetime.datetime.utcnow().isoformat() + 'Z'
     channel = bot.get_channel(channel_ID)
     items = googleCalendarAPI.get_event_items(service, now)
-    event_startTime = googleCalendarAPI.get_event_startTime(items)
-    time_bool = check_time(event_startTime)
+    event_startTime = googleCalendarAPI.get_event_startTime_zero(items)
+    time_bool = googleCalendarAPI.check_time(event_startTime)
     if time_bool:
-        event_attendee = googleCalendarAPI.get_attendee_ids(items)
+        event_attendee = googleCalendarAPI.get_attendee_ids(items) 
         event_attendee = (', '.join(str(a) for a in event_attendee))
         event_summary = googleCalendarAPI.get_event_summary(items)
         event_description = googleCalendarAPI.get_event_description(items)
         event_date = googleCalendarAPI.day_month_year(event_startTime)
         event_startTime = googleCalendarAPI.convert_time(event_startTime)
-        event_endTime = googleCalendarAPI.get_event_endTime(items)
+        event_endTime = googleCalendarAPI.get_event_endTime_zero(items)
         event_endTime = googleCalendarAPI.convert_time(event_endTime)
-        await channel.send(f'Attendees: **{event_attendee}**\nSummary:\n**{event_summary}**\n\nDescription: \n{event_description}\n\nDate: **{event_date}**\nStart Time: **{event_startTime}**\nEnd Time: **{event_endTime}**')
+        await channel.send(f'**Attendees:** {event_attendee}\n**Summary:**\n{event_summary}\n\n**Description:** \n{event_description}\n\n**Date:** {event_date}**\nStart Time:** {event_startTime}\n**End Time:** {event_endTime}')
 
 @bot.event
 async def on_ready():
