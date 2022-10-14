@@ -77,7 +77,7 @@ async def reminder():
     items = googleCalendarAPI.get_event_items(service, now)
     event_startTime = googleCalendarAPI.get_event_startTime(items)
     time_bool = check_time(event_startTime)
-    if not time_bool:
+    if time_bool:
         event_attendee = googleCalendarAPI.get_attendee_ids(items)
         event_attendee = (', '.join(str(a) for a in event_attendee))
         event_summary = googleCalendarAPI.get_event_summary(items)
