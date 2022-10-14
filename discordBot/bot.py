@@ -56,33 +56,15 @@ def check_time(time):
         return True
     else:
         return False
+    
 #Section for Discord Bot Code
 load_dotenv()
 
 intents = discord.Intents.all()
 token = os.getenv('TOKEN')
 
-# discord_bot = discord.Client(intents=intents)
 bot = discord.Client (intents=intents)
 
-# @discord_bot.event
-# async def on_message(message):
-#     creds = validate_google_API_credentials()
-#     if message.content == "hello":
-#         await message.reply("hey dirtbag")
-#     elif message.content == "calendar":      
-#         service = build('calendar', 'v3', credentials=creds)
-#         now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-#         items = googleCalendarAPI.get_event_items(service, now)
-#         list = googleCalendarAPI.get_attendee_ids(items)
-#         event_summary = googleCalendarAPI.get_event_summary(items)
-#         event_description = googleCalendarAPI.get_event_description(items)
-#         event_startTime = googleCalendarAPI.get_event_startTime(items)
-#         event_endTime = googleCalendarAPI.get_event_endTime(items)
-#         if not list:
-#             await message.reply(f'Attendees: **None**\nSummary:\n**{event_summary}**\n\nDescription: \n{event_description}\n\nStart Time: **{event_startTime}**\nEnd Time: **{event_endTime}**')
-#         else:
-#             await message.reply(f'Attendees: **{list}**\nSummary:\n**{event_summary}**\n\nDescription: \n{event_description}\n\nStart Time: **{event_startTime}**\nEnd Time: **{event_endTime}**')
 #Predeclariations for Discord Bot Function Call
 channel_ID = 1027272274027499573
 creds = validate_google_API_credentials()
