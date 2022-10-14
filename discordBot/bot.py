@@ -46,7 +46,7 @@ def check_time(time):
     time_int -= HOURS_BEFORE
     if time_int < 0:
         return False
-#Builds the string for time to compare it to the current time
+    #Builds the string for time to compare it to the current time
     time_string = f'{time_int}:{time[14:16]}'
     time_zone = pytz.timezone('America/Los_Angeles')
     current_time = datetime.now(time_zone)
@@ -66,7 +66,7 @@ token = os.getenv('TOKEN')
 bot = discord.Client (intents=intents)
 
 #Predeclariations for Discord Bot Function Call
-channel_ID = 1027272274027499573
+channel_ID = 996591747226411018
 creds = validate_google_API_credentials()
 service = build('calendar', 'v3', credentials=creds)
 now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
@@ -77,23 +77,22 @@ async def test():
     items = googleCalendarAPI.get_event_items(service, now)
     event_startTime = googleCalendarAPI.get_event_startTime(items)
     time_bool = check_time(event_startTime)
-    if time_bool:
+    if not time_bool:
         event_attendee = googleCalendarAPI.get_attendee_ids(items)
+        event_attendee = (', '.join(str(a) for a in event_attendee))
         event_summary = googleCalendarAPI.get_event_summary(items)
         event_description = googleCalendarAPI.get_event_description(items)
+        event_date = googleCalendarAPI.day_month_year(event_startTime)
         event_startTime = googleCalendarAPI.convert_time(event_startTime)
         event_endTime = googleCalendarAPI.get_event_endTime(items)
         event_endTime = googleCalendarAPI.convert_time(event_endTime)
-        await channel.send(f'Attendees: **{event_attendee}**\nSummary:\n**{event_summary}**\n\nDescription: \n{event_description}\n\nStart Time: **{event_startTime}**\nEnd Time: **{event_endTime}**')
-    else:
-        await channel.send("This bot has found no events 5 hours in the future")
+        await channel.send(f'Attendees: **{event_attendee}**\nSummary:\n**{event_summary}**\n\nDescription: \n{event_description}\n\nDate: **{event_date}**\nStart Time: **{event_startTime}**\nEnd Time: **{event_endTime}**')
 
 @bot.event
 async def on_ready():
     test.start()
 
 bot.run(token)
-# discord_bot.run(token) # type: ignore
 
 
     
