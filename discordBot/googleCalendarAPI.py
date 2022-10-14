@@ -1,3 +1,6 @@
+from os import times
+
+
 def get_event_items(service,now):
     event = service.events().list(calendarId='primary', maxResults=1, timeMin=now, singleEvents=True, orderBy='startTime').execute()
     events_items = event.get('items',[])
@@ -30,56 +33,52 @@ def convert_discord_ids(id_list):
 
 
 
-def get_attendee_ids(service, now):
+def get_attendee_ids(items):
     
-    print('Getting the next upcoming event')
-    events = get_event_items(service,now)
+    print('Getting the attendee ids')
     #Pulls event id using the 'id' identifier in the array
-    event_id = events[0].get('id')
+    event_id = items[0].get('id')
     str(event_id)
-    
-    attendee_id_list = service.events().get(calendarId='primary', eventId=event_id).execute()
 
-    id_list = attendee_id_list.get('attendees', [])
+    id_list = items[0].get('attendees', [])
     
-    if not events:
+    if not items:
         print('No upcoming events found.')
         return
     
-    
-    for id in id_list:
-            list = id.get('email', [])
-            print(list)
-    
     discord_ids = convert_discord_ids(id_list)
     return discord_ids
-    # Prints the start and name of the next 10 events
-    #for event in events:
-        #start = event['start'].get('dateTime', event['start'].get('date'))
-        #print(start, event['summary'])
-    
-    
 
-def get_event_summary(service, now):
+def get_event_summary(events_result):
     print('Getting event details')
-    events_result = get_event_items(service, now)
     events_summary = events_result[0].get('summary', [])
     return events_summary
 
-def get_event_startTime(service, now):
-    print('Getting event start time')
-    events_result = get_event_items(service,now)
-    events_start = events_result[0].get('start', [])
-    events_start_time = events_start.get('dateTime', [])
-    return events_start_time
-    
+def get_event_description(events_result):
+    print('Getting event summary')
+    events_description = events_result[0].get('description', [])
+    return events_description
     
 
-def get_event_endTime(service,now):
+def convert_time(timeString):
+    import datetime
+    newTime = datetime.datetime.strptime(timeString[11:16], '%H:%M').strftime('%I:%M %p')
+    return newTime
+
+def get_event_startTime(events_result):
+    print('Getting event start time')
+    events_start = events_result[0].get('start', [])
+    events_start_time = events_start.get('dateTime', [])
+    #events_start_time = convert_time(events_start_time)
+    return events_start_time
+
+def get_event_endTime(events_result):
     print('Getting event end time')
-    events_result = get_event_items(service,now)
     events_end = events_result[0].get('end', [])
     events_end_time = events_end.get('dateTime')
+    #events_end_time = convert_time(events_end_time)
     return events_end_time
+
+
     
 

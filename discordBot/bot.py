@@ -1,4 +1,5 @@
 from __future__ import print_function
+from email.errors import StartBoundaryNotFoundDefect
 #HEADERS FOR DISCORD API
 import discord, asyncio, os, googleCalendarAPI
 from discord.ext import commands, tasks
@@ -36,63 +37,81 @@ def validate_google_API_credentials():
             token.write(creds.to_json())
     return creds
 
+HOURS_BEFORE = 5
+#Checks the time of the next event check if it's 5 hours before
+def check_time(time):
+    from datetime import datetime
+    import pytz
+    time_int = int(time[11:13])
+    time_int -= HOURS_BEFORE
+    if time_int < 0:
+        return False
+#Builds the string for time to compare it to the current time
+    time_string = f'{time_int}:{time[14:16]}'
+    time_zone = pytz.timezone('America/Los_Angeles')
+    current_time = datetime.now(time_zone)
+    #converts current time to be Hours and Minutes In military time
+    current_time = current_time.strftime("%H:%M")
+    if time_string == current_time:
+        return True
+    else:
+        return False
 #Section for Discord Bot Code
 load_dotenv()
 
 intents = discord.Intents.all()
 token = os.getenv('TOKEN')
 
-discord_bot = discord.Client(intents=intents)
-bot = commands.Bot('!', intents=intents)
+# discord_bot = discord.Client(intents=intents)
+bot = discord.Client (intents=intents)
 
-@discord_bot.event
-async def on_message(message):
-    creds = validate_google_API_credentials()
-    if message.content == "hello":
-        await message.reply("hey dirtbag")
-    elif message.content == "calendar":      
-        service = build('calendar', 'v3', credentials=creds)
-        now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-        list = googleCalendarAPI.get_attendee_ids(service, now)
-        event_summary = googleCalendarAPI.get_event_summary(service,now)
-        event_startTime = googleCalendarAPI.get_event_startTime(service, now)
-        event_endTime = googleCalendarAPI.get_event_endTime(service, now)
-        if not list:
-            await message.reply(f'No attendees on listed event\nHere is the summary of the event:\n**{event_summary}**\n Here is the start time and end time: **{event_startTime}** and **{event_endTime}**')
-        else:    
-            
-            for item in list:
-                await message.reply(f'{item}')
-            
-            await message.reply(f'Here is the summary of the event:\n {event_summary}\n Here is the start time and end time: {event_startTime} and {event_endTime}')   
-
-        
-# channel_ID = 1027272274027499573
-# @tasks.loop(minutes=1)
-# async def called_once_a_minute():
-#     #Validates google credentials
+# @discord_bot.event
+# async def on_message(message):
 #     creds = validate_google_API_credentials()
-#     #Pulls ID for channel
-#     message_channel = bot.get_channel(channel_ID)
-#     #Prints the channel ID
-#     print(f"Got channel {message_channel}")
-#     #Builds calendar service object
-#     service = build('calendar', 'v3', credentials=creds)
-#     #Grabs current time
-#     now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-#     #Grabs list of attendee's
-#     list = googleCalendarAPI.get_attendee_ids(service, now)
-#     for item in list:
-#             await message_channel.send(f'{item}')
+#     if message.content == "hello":
+#         await message.reply("hey dirtbag")
+#     elif message.content == "calendar":      
+#         service = build('calendar', 'v3', credentials=creds)
+#         now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
+#         items = googleCalendarAPI.get_event_items(service, now)
+#         list = googleCalendarAPI.get_attendee_ids(items)
+#         event_summary = googleCalendarAPI.get_event_summary(items)
+#         event_description = googleCalendarAPI.get_event_description(items)
+#         event_startTime = googleCalendarAPI.get_event_startTime(items)
+#         event_endTime = googleCalendarAPI.get_event_endTime(items)
+#         if not list:
+#             await message.reply(f'Attendees: **None**\nSummary:\n**{event_summary}**\n\nDescription: \n{event_description}\n\nStart Time: **{event_startTime}**\nEnd Time: **{event_endTime}**')
+#         else:
+#             await message.reply(f'Attendees: **{list}**\nSummary:\n**{event_summary}**\n\nDescription: \n{event_description}\n\nStart Time: **{event_startTime}**\nEnd Time: **{event_endTime}**')
+#Predeclariations for Discord Bot Function Call
+channel_ID = 1027272274027499573
+creds = validate_google_API_credentials()
+service = build('calendar', 'v3', credentials=creds)
+now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
+        
+@tasks.loop(minutes=1)
+async def test():
+    channel = bot.get_channel(channel_ID)
+    items = googleCalendarAPI.get_event_items(service, now)
+    event_startTime = googleCalendarAPI.get_event_startTime(items)
+    time_bool = check_time(event_startTime)
+    if time_bool:
+        event_attendee = googleCalendarAPI.get_attendee_ids(items)
+        event_summary = googleCalendarAPI.get_event_summary(items)
+        event_description = googleCalendarAPI.get_event_description(items)
+        event_startTime = googleCalendarAPI.convert_time(event_startTime)
+        event_endTime = googleCalendarAPI.get_event_endTime(items)
+        event_endTime = googleCalendarAPI.convert_time(event_endTime)
+        await channel.send(f'Attendees: **{event_attendee}**\nSummary:\n**{event_summary}**\n\nDescription: \n{event_description}\n\nStart Time: **{event_startTime}**\nEnd Time: **{event_endTime}**')
+    else:
+        await channel.send("This bot has found no events 5 hours in the future")
 
-# @called_once_a_minute.before_loop
-# async def before():
-#     await bot.wait_until_ready()
-#     print("Finished Waiting")
+@bot.event
+async def on_ready():
+    test.start()
 
-# called_once_a_minute.start()
-# bot.run(token)
-discord_bot.run(token) # type: ignore
+bot.run(token)
+# discord_bot.run(token) # type: ignore
 
 
     
