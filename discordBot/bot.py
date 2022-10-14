@@ -72,7 +72,7 @@ service = build('calendar', 'v3', credentials=creds)
 now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
         
 @tasks.loop(minutes=1)
-async def test():
+async def reminder():
     channel = bot.get_channel(channel_ID)
     items = googleCalendarAPI.get_event_items(service, now)
     event_startTime = googleCalendarAPI.get_event_startTime(items)
@@ -90,7 +90,7 @@ async def test():
 
 @bot.event
 async def on_ready():
-    test.start()
+    reminder.start()
 
 bot.run(token)
 
